@@ -18,10 +18,7 @@ public class Niri : Object {
     string[] keyboard_layouts { get; private set; }
 
     public uint8 keyboard_layout_idx { get; private set; }
-    // representing Optional uint64 as -1 due to: `warning: Type `uint64?' can not be used for a GLib.Object property`. 
-    // Will overflow if niri ever uses full uint64 values or someone opens 9 quintillion windows
-    public int64 focused_workspace_id { get; private set; }
-    public int64 focused_window_id { get; private set; }
+
     public string focused_output_name { get; private set; }
 
     public Workspace? focused_workspace { get; private set; }
@@ -53,7 +50,7 @@ public class Niri : Object {
     /** A window has closed. */
     public signal void window_closed(int64 id);
     /** A window has been focused. */
-    public signal void window_focus_changed(int64 window_id);
+    public signal void window_focus_changed(int64? window_id);
 
     public signal void keyboard_layouts_changed(string[] keyboard_layouts);
     public signal void keyboard_layout_switched(uint8 idx);
@@ -294,7 +291,7 @@ public class Niri : Object {
 
     private void on_window_focus_changed(Json.Object event) {
         var _id = event.get_member("id");
-        int64 id = -1;
+        int64? id = null;
         if (!_id.is_null())  id = _id.get_int();
         
         update_focused_window(id);
@@ -331,26 +328,22 @@ public class Niri : Object {
     // on_workspaces_changed
     // on_workspace_activated
     private unowned void update_focused_workspace(int64? _id) {
-        int64 id = -1;
-        if(_id != null) id = _id;
-
-        if(focused_workspace_id != -1) {
-            var prev = _workspaces.get(focused_workspace_id);
-            prev.is_focused = focused_workspace_id == id;
-            if (prev.is_focused) {
+        // Handle state for the previously focused workspace
+        if (focused_workspace != null){
+            focused_workspace.is_focused = focused_workspace.id == _id;
+            if (focused_workspace.is_focused) {
                 notify_property("focused_workspace");
                 return;
             }
         }
 
-        focused_workspace_id = id;
-        var new_focused = _workspaces.get(focused_workspace_id);
-        if (new_focused != null) {
+        // Set new focused
+        if (_id != null) {
+            var new_focused = _workspaces.get(_id);
             new_focused.is_focused = true;
             focused_workspace = new_focused;
         } else {
             focused_workspace = null;
-            notify_property("focused_workspace");
         }
     }
 
@@ -358,28 +351,24 @@ public class Niri : Object {
     // on_window_focus_changed
     // on_windows_changed
     private unowned void update_focused_window(int64? _id) {
-        int64 id = -1;
-        if(_id != null) id = _id;
-
-        // remove focused state from previous window
-        if (focused_window_id != -1) {
-            var prev = _windows.get(focused_window_id);
-            prev.is_focused = focused_window_id == id;
-            if (prev.is_focused) {
+        // Handle state for the previously focused window
+        if (focused_window != null){
+            focused_window.is_focused = focused_window.id == _id;
+            if (focused_window.is_focused) {
                 notify_property("focused_window");
                 return;
             }
         }
 
-        focused_window_id = id;
-        var new_focused = _windows.get(focused_window_id);
-        if (new_focused != null) {
+        // Set new focused
+        if (_id != null) {
+            var new_focused = _windows.get(_id);
             new_focused.is_focused = true;
             focused_window = new_focused;
         } else {
           focused_window = null;
         }
-        window_focus_changed(focused_window_id);
+        window_focus_changed(_id);
     }
 }
 }
