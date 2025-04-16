@@ -332,7 +332,6 @@ public class Niri : Object {
         if (focused_workspace != null){
             focused_workspace.is_focused = focused_workspace.id == _id;
             if (focused_workspace.is_focused) {
-                notify_property("focused_workspace");
                 return;
             }
         }
@@ -355,7 +354,6 @@ public class Niri : Object {
         if (focused_window != null){
             focused_window.is_focused = focused_window.id == _id;
             if (focused_window.is_focused) {
-                notify_property("focused_window");
                 return;
             }
         }
