@@ -34,20 +34,14 @@ public class Workspace : Object {
     internal void sync(Json.Object object) {
         id = object.get_int_member("id");
         idx = (uint8) object.get_int_member("idx");
-        var _name = object.get_member("name");
-        var _output = object.get_member("output");
+        _name = object.get_member("name").get_string();
+        _output = object.get_member("output").get_string();
         is_active = object.get_boolean_member("is_active");
         is_focused = object.get_boolean_member("is_focused");
         var _active_window_id = object.get_member("active_window_id");
 
         if (_active_window_id.is_null()) { active_window_id = -1;}
         else { active_window_id = _active_window_id.get_int(); }
-
-        if (_name.is_null()) { name = null;}
-        else { name = _name.get_string(); }
-
-        if (_output.is_null()) { output = null;}
-        else { output = _output.get_string(); }
     }
 
     public unowned Window? get_active_window() {

@@ -26,16 +26,10 @@ public class Window : Object {
 
     internal void sync(Json.Object object) {
         id = object.get_int_member("id");
-        var _title = object.get_member("title");
-        var _app_id = object.get_member("app_id");
+        _title = object.get_member("title").get_string();
+        _app_id = object.get_member("app_id").get_string();
         var _workspace_id = object.get_member("workspace_id");
         is_focused = object.get_boolean_member("is_focused");
-
-        if (_title.is_null()) { title = null;}
-        else { title = _title.get_string(); }
-
-        if (_app_id.is_null()) { app_id = null;}
-        else { app_id = _app_id.get_string(); }
 
         if (_workspace_id.is_null()) { workspace_id = -1; }
         else { workspace_id = _workspace_id.get_int(); }

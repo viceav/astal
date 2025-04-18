@@ -25,10 +25,10 @@ public class Niri : Object {
     public Window? focused_window { get; private set; }
     public Output? focused_output { get; private set; }
 
-    public List<weak Window> windows { owned get { return _windows.get_values().copy(); } }
-    public List<weak Output> outputs { owned get { return _outputs.get_values().copy(); } }
+    public List<weak Window> windows { owned get { return _windows.get_values(); } }
+    public List<weak Output> outputs { owned get { return _outputs.get_values(); } }
     public List<weak Workspace> workspaces { owned get {
-        var res = _workspaces.get_values().copy();
+        var res = _workspaces.get_values();
         res.sort(sort_workspaces);
         return res;
     } }
