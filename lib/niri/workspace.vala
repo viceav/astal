@@ -14,7 +14,7 @@ public class Workspace : Object {
     /** if this is the current Focused Workspace */
     public bool is_focused { get; internal set; }
     /** id of the active window on the workspace */
-    public int64 active_window_id {get; internal set;}
+    public Window? active_window {get; internal set;}
     /* public List<weak Window> windows { owned get {
      return Niri._windows.get_values().copy(); 
     } } */
@@ -25,7 +25,7 @@ public class Workspace : Object {
     /** Emitted when a workspace was activated on an output. */
     public signal void activated();
     /** Emitted when the window changes on a workspace. */
-    public signal void active_window_changed(int64? id);
+    public signal void active_window_changed(Window? window);
 
     internal Workspace.from_json(Json.Object object) {
         sync(object);
@@ -34,19 +34,14 @@ public class Workspace : Object {
     internal void sync(Json.Object object) {
         id = object.get_int_member("id");
         idx = (uint8) object.get_int_member("idx");
-        _name = object.get_member("name").get_string();
-        _output = object.get_member("output").get_string();
+        name = object.get_member("name").get_string();
+        output = object.get_member("output").get_string();
         is_active = object.get_boolean_member("is_active");
         is_focused = object.get_boolean_member("is_focused");
         var _active_window_id = object.get_member("active_window_id");
 
-        if (_active_window_id.is_null()) { active_window_id = -1;}
-        else { active_window_id = _active_window_id.get_int(); }
-    }
-
-    public unowned Window? get_active_window() {
-        if (active_window_id == -1) return null;
-        return Niri.get_default().get_window(active_window_id);
+        if (_active_window_id.is_null()) { active_window = null; }
+        else { active_window = Niri.get_default().get_window(_active_window_id.get_int()); }
     }
 }
 }

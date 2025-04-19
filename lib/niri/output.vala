@@ -57,7 +57,7 @@ public class Output : Object {
         }
     }
 
-    public unowned Workspace? get_active_workspace() {
+    public Workspace? get_active_workspace() {
         if (active_workspace_id == -1) return null;
         return Niri.get_default().get_workspace(active_workspace_id);
     }

@@ -38,8 +38,8 @@ public class Niri : Object {
     public signal void event(Json.Node event);
     /** The list of workspaces changed. */
     public signal void workspaces_changed(List<weak Workspace> workspaces);
-    public signal void workspace_activated(int64 workspace, bool focused);
-    public signal void workspace_active_window_changed(int64 workspace, int64 window_id);
+    public signal void workspace_activated(Workspace workspace, bool focused);
+    public signal void workspace_active_window_changed(Workspace workspace, Window? window);
     /** The list of windows changed. */
     public signal void windows_changed(List<weak Window> windows);
     public signal void window_opened_or_changed(Window window);
@@ -50,7 +50,7 @@ public class Niri : Object {
     /** A window has closed. */
     public signal void window_closed(int64 id);
     /** A window has been focused. */
-    public signal void window_focus_changed(int64? window_id);
+    public signal void window_focus_changed(Window? window);
 
     public signal void keyboard_layouts_changed(string[] keyboard_layouts);
     public signal void keyboard_layout_switched(uint8 idx);
@@ -187,9 +187,7 @@ public class Niri : Object {
                 // requeres additional message to retrieve output data
                 // _outputs.insert(workspace.output, )
             // }
-            if(workspace.is_focused) {
-                update_focused_workspace(workspace.id);
-            }
+            if(workspace.is_focused) { focused_workspace = workspace; }
         }
         workspaces_changed(workspaces);
         notify_property("workspaces");
@@ -215,7 +213,7 @@ public class Niri : Object {
         }
         if (focused) update_focused_workspace(id);
 
-        workspace_activated(id, focused);
+        workspace_activated(activated_workspace, focused);
         activated_workspace.activated();
     }
 
@@ -230,14 +228,14 @@ public class Niri : Object {
         }
 
         if (_active_window_id.is_null()) {
-            workspace.active_window_id = -1;
-            workspace_active_window_changed(workspace_id, -1);
+            workspace.active_window = null;
+            workspace_active_window_changed(workspace, null);
         } else {
             var active_window_id = _active_window_id.get_int();
-            workspace.active_window_id = active_window_id;
-            workspace_active_window_changed(workspace_id, active_window_id);
+            workspace.active_window = get_window(active_window_id);
+            workspace_active_window_changed(workspace, workspace.active_window);
         }
-            workspace.active_window_changed(workspace.active_window_id);
+            workspace.active_window_changed(workspace.active_window);
     }
 
     private void on_windows_changed(Json.Object event) {
@@ -317,17 +315,17 @@ public class Niri : Object {
         keyboard_layout_switched(keyboard_layout_idx);
     }
 
-    public unowned Window? get_window(int64 id) {
+    public Window? get_window(int64 id) {
         return _windows.get(id);
     }
 
-    public unowned Workspace? get_workspace(int64 id) {
+    public Workspace? get_workspace(int64 id) {
         return _workspaces.get(id);
     }
 
     // on_workspaces_changed
     // on_workspace_activated
-    private unowned void update_focused_workspace(int64? _id) {
+    private void update_focused_workspace(int64? _id) {
         // Handle state for the previously focused workspace
         if (focused_workspace != null){
             focused_workspace.is_focused = focused_workspace.id == _id;
@@ -349,7 +347,7 @@ public class Niri : Object {
     // on_window_opened_or_changed
     // on_window_focus_changed
     // on_windows_changed
-    private unowned void update_focused_window(int64? _id) {
+    private void update_focused_window(int64? _id) {
         // Handle state for the previously focused window
         if (focused_window != null){
             focused_window.is_focused = focused_window.id == _id;
@@ -366,7 +364,7 @@ public class Niri : Object {
         } else {
           focused_window = null;
         }
-        window_focus_changed(_id);
+        window_focus_changed(focused_window);
     }
 }
 }
